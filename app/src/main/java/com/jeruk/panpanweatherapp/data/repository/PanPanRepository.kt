@@ -5,9 +5,9 @@ import com.jeruk.panpanweatherapp.ui.model.PanPan
 
 class PanPanRepository(private val service: PanPanService) {
 
-    suspend fun PanPanPan(): PanPan {
+    suspend fun PanPanPan(cityName: String): PanPan {
         val PanPan = service.getCurrentWeather(
-            cityName = "tokyo",
+            cityName = cityName,
             units = "metric",
             apiKey = "c41d64b799325960010c4b23acfa4a86"
         ).body()!!
@@ -23,7 +23,7 @@ class PanPanRepository(private val service: PanPanService) {
             humidity = PanPan.main.humidity,
             windSpeed = PanPan.wind.speed,
             feelsLike = PanPan.main.feels_like,
-            rainFallLastHour = PanPan.rain.`1h`,
+            rainFallLastHour = PanPan.rain?.`1h` ?: 0.0,
             pressure = PanPan.main.pressure,
             cloudsAll = PanPan.clouds.all,
 

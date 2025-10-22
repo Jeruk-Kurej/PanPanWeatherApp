@@ -14,13 +14,9 @@ class PanPanViewModel : ViewModel() {
 
     val weather: StateFlow<PanPan> = _weather
 
-    init {
-        loadWeather()
-    }
-
-    fun loadWeather() {
+    fun loadWeather(cityName: String) {
         viewModelScope.launch {
-            _weather.value = PanPanContainer().panPanRepository.PanPanPan()
+            _weather.value = PanPanContainer().panPanRepository.PanPanPan(cityName)
         }
     }
 

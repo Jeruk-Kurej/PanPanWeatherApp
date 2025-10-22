@@ -1,7 +1,9 @@
 package com.jeruk.panpanweatherapp.ui.view
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -10,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -26,18 +29,34 @@ fun PanPanWeatherApp(
 
     Column(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        OutlinedTextField(
-            value = userInputCityName,
-            onValueChange = { userInputCityName = it },
-            placeholder = {
-                Text(
-                    "Enter city name..."
-                )
+        Row {
+            OutlinedTextField(
+                value = userInputCityName,
+                onValueChange = { userInputCityName = it },
+                placeholder = {
+                    Text(
+                        "Enter city name..."
+                    )
+                }
+            )
+            Button(onClick = {
+                if (userInputCityName.isNotBlank()) {
+                    viewModel.loadWeather(userInputCityName)
+                }
+            }) {
+                Text("Search")
             }
-        )
-
+        }
+        if (weatherState.cityName.isBlank()) {
+            Text("Search for a city to get started")
+        } else {
+            Text(
+                weatherState.cityName
+            )
+        }
     }
 }
 

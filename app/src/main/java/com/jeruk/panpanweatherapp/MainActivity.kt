@@ -20,14 +20,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PanPanWeatherAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    PanPanWeatherApp(
-                        modifier = Modifier
-                            .padding(
-                                innerPadding
-                            )
-                    )
-                }
+//                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                PanPanWeatherApp(
+                    modifier = Modifier
+                        .padding(
+//                                innerPadding
+                        )
+                )
+//                }
             }
         }
     }

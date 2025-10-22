@@ -30,7 +30,7 @@ class PanPanRepository(private val service: PanPanService) {
             sunriseTime = PanPan.sys.sunrise,
             sunsetTime = PanPan.sys.sunset,
 
-            isLoading = false,
+            isError = false,
             errorMessage = null
         )
 

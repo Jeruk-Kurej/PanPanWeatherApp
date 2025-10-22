@@ -14,6 +14,6 @@ data class PanPan(
     val cloudsAll: Int = 0,
     val sunriseTime: Int = 0,
     val sunsetTime: Int = 0,
-    val isLoading: Boolean = false,
+    val isError: Boolean = false,
     val errorMessage: String? = null
 )

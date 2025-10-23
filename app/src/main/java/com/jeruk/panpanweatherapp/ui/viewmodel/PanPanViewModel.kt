@@ -16,6 +16,9 @@ class PanPanViewModel : ViewModel() {
 
     val weather: StateFlow<PanPan> = _weather
 
+    private val _weatherIconUrl = MutableStateFlow<String?>(null)
+    val weatherIconUrl: StateFlow<String?> = _weatherIconUrl
+
     fun loadWeather(cityName: String) {
         viewModelScope.launch {
             _weather.value = _weather.value.copy(
@@ -30,13 +33,20 @@ class PanPanViewModel : ViewModel() {
                     isError = false,
                     errorMessage = null
                 )
+
+                _weatherIconUrl.value = PanPanContainer().panPanRepository.getWeatherIcon(
+                    result.weatherIconCode
+                ).url
+
             } catch (e: Exception) {
                 _weather.value = _weather.value.copy(
                     isError = true,
                     errorMessage = "HTTP 404 Not Found"
                 )
+                _weatherIconUrl.value = null
             }
         }
     }
+
 
 }

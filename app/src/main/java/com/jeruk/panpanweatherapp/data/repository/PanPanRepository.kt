@@ -1,5 +1,6 @@
 package com.jeruk.panpanweatherapp.data.repository
 
+import com.jeruk.panpanweatherapp.data.dto.ResponseIcon
 import com.jeruk.panpanweatherapp.data.service.PanPanService
 import com.jeruk.panpanweatherapp.ui.model.PanPan
 
@@ -11,7 +12,6 @@ class PanPanRepository(private val service: PanPanService) {
             units = "metric",
             apiKey = "c41d64b799325960010c4b23acfa4a86"
         ).body()!!
-
         return PanPan(
             cityName = PanPan.name,
             dateTime = PanPan.dt,
@@ -33,7 +33,11 @@ class PanPanRepository(private val service: PanPanService) {
             isError = false,
             errorMessage = null
         )
+    }
 
+    fun getWeatherIcon(iconId: String): ResponseIcon {
+        val url = "https://openweathermap.org/img/wn/$iconId@2x.png"
+        return ResponseIcon(iconId, url)
     }
 
 }

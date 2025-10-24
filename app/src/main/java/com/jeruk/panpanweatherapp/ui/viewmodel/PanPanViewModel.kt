@@ -63,11 +63,6 @@ class PanPanViewModel : ViewModel() {
 
     fun loadWeather(cityName: String) {
         viewModelScope.launch {
-            _weather.value = _weather.value.copy(
-                isError = false,
-                errorMessage = null
-            )
-
             try {
                 val result = PanPanContainer().panPanRepository.PanPanPan(cityName)
 

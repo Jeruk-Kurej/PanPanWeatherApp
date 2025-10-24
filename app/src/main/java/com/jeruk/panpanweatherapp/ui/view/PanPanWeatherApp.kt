@@ -46,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -78,6 +79,7 @@ fun PanPanWeatherApp(
 
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(
         modifier = modifier
@@ -94,7 +96,7 @@ fun PanPanWeatherApp(
                 .padding(bottom = 22.dp)
                 .padding(WindowInsets.statusBars.asPaddingValues()),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             OutlinedTextField(
                 value = userInputCityName,
@@ -125,7 +127,9 @@ fun PanPanWeatherApp(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White
                 ),
-                modifier = Modifier.width(275.dp),
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .weight(0.4f),
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(
                     onSearch = {
@@ -134,15 +138,19 @@ fun PanPanWeatherApp(
                             coroutineScope.launch {
                                 listState.scrollToItem(0)
                             }
+                            keyboardController?.hide()
                         }
                     }
                 )
             )
 
+            Spacer(modifier = modifier.width(12.dp))
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
+                    .weight(0.15f)
                     .clip(RoundedCornerShape(16.dp))
                     .background(Color.White.copy(alpha = 0.12f))
                     .border(
@@ -156,9 +164,10 @@ fun PanPanWeatherApp(
                             coroutineScope.launch {
                                 listState.scrollToItem(0)
                             }
+                            keyboardController?.hide()
                         }
                     }
-                    .padding(horizontal = 10.dp, vertical = 15.dp)
+                    .padding(horizontal = 10.dp, vertical = 16.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Search,
@@ -204,7 +213,7 @@ fun PanPanWeatherApp(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(
-                            96.dp,
+                            88.dp,
                             alignment = Alignment.CenterVertically
                         ),
                         modifier = modifier

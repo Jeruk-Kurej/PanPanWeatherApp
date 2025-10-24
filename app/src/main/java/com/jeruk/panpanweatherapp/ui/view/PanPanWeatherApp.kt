@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -19,7 +21,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
@@ -36,12 +41,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusModifier
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.toLowerCase
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,27 +71,35 @@ fun PanPanWeatherApp(
     val timestamp = weatherState.dateTime * 1000L
     val date = Date(timestamp)
 
+    val sunrieTime = SimpleDateFormat("HH:mm a", Locale("id")).format(Date(weatherState.sunriseTime * 1000L))
+    val sunsetTime = SimpleDateFormat("HH:mm a", Locale("id")).format(Date(weatherState.sunsetTime * 1000L))
+
     val dateFormatter = SimpleDateFormat("MMMM dd", Locale("id"))
     val tanggalBerapa = dateFormatter.format(date)
 
     val timeFormatter = SimpleDateFormat("HH:mm a", Locale("id"))
     val jamBerapa = timeFormatter.format(date)
 
-    Box(
-        modifier = modifier.fillMaxSize()
+    Column (
+        modifier = modifier
+            .fillMaxSize()
+            .paint(
+                painter = painterResource(R.drawable.weather___home_2),
+                contentScale = ContentScale.Crop
+            )
     ) {
-        Image(
-            painter = painterResource(R.drawable.weather___home_2),
-            contentDescription = "background",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.FillBounds
-        )
+//        Image(
+//            painter = painterResource(R.drawable.weather___home_2),
+//            contentDescription = "background",
+//            modifier = Modifier.fillMaxSize(),
+//            contentScale = ContentScale.FillBounds
+//        )
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .align(Alignment.TopCenter)
+                .padding(bottom = 22.dp)
                 .padding(WindowInsets.statusBars.asPaddingValues()),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -155,11 +168,13 @@ fun PanPanWeatherApp(
             }
         }
 
-        Column(
-            modifier = Modifier.fillMaxSize(),
+        LazyColumn (
+            modifier = Modifier
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            item {
             if (weatherState.errorMessage != null) {
                 ErrorView(weatherState.errorMessage)
             } else if (weatherState.cityName.isBlank()) {
@@ -179,113 +194,193 @@ fun PanPanWeatherApp(
                     )
                 }
             } else {
-                LazyColumn(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = modifier
+                        .padding(horizontal = 24.dp)
                 ) {
-                    item {
+//                    item {
                         Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            verticalArrangement = Arrangement.spacedBy(96.dp)
                         ) {
-                            Row(
-                                modifier = modifier
-                                    .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(
-                                    6.dp,
-                                    alignment = Alignment.CenterHorizontally
-                                ),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.LocationOn,
-                                    contentDescription = "Location",
-                                    tint = Color.White
-                                )
-                                Text(
-                                    "${weatherState.cityName}",
-                                    color = Color.White,
-                                    fontSize = 18.sp
-                                )
-                            }
                             Column(
-                                verticalArrangement = Arrangement.spacedBy(
-                                    4.dp,
-                                    alignment = Alignment.CenterVertically
-                                ),
-                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Row(
+                                    modifier = modifier
+                                        .fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(
+                                        6.dp,
+                                        alignment = Alignment.CenterHorizontally
+                                    ),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.LocationOn,
+                                        contentDescription = "Location",
+                                        tint = Color.White
+                                    )
+                                    Text(
+                                        "${weatherState.cityName}",
+                                        color = Color.White,
+                                        fontSize = 18.sp
+                                    )
+                                }
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(
+                                        4.dp,
+                                        alignment = Alignment.CenterVertically
+                                    ),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = modifier
+                                        .fillMaxWidth()
+                                ) {
+                                    Text(
+                                        "${tanggalBerapa}",
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        fontSize = 36.sp
+                                    )
+                                    Text(
+                                        "Updated as of ${jamBerapa}",
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White.copy(alpha = 0.7f),
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                verticalAlignment = Alignment.CenterVertically,
                                 modifier = modifier
                                     .fillMaxWidth()
                             ) {
-                                Text(
-                                    "${tanggalBerapa}",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    fontSize = 36.sp
-                                )
-                                Text(
-                                    "Updated as of ${jamBerapa}",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White.copy(alpha = 0.7f),
-                                    fontSize = 16.sp
-                                )
-                            }
-                        }
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = modifier
-                                .fillMaxWidth()
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(
-                                    4.dp,
-                                    alignment = Alignment.CenterVertically
-                                )
-                            ) {
-                                iconByUrl?.let {
-                                    Image(
-                                        painter = rememberAsyncImagePainter(it),
-                                        contentDescription = "Weather Icon",
-                                        modifier = Modifier.size(64.dp)
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(
+                                        4.dp,
+                                        alignment = Alignment.CenterVertically
+                                    )
+                                ) {
+                                    iconByUrl?.let {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(it),
+                                            contentDescription = "Weather Icon",
+                                            modifier = Modifier.size(64.dp)
+                                        )
+                                    }
+                                    Text(
+                                        weatherState.weatherCondition,
+                                        color = Color.White,
+                                        fontSize = 26.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        "${weatherState.temperature.roundToInt()}°C",
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        fontSize = 64.sp
                                     )
                                 }
-                                Text(
-                                    weatherState.weatherCondition,
-                                    color = Color.White,
-                                    fontSize = 26.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    "${weatherState.temperature.roundToInt()}°C",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    fontSize = 64.sp
+
+                                Image(
+                                    painter = painterResource(
+                                        if (weatherState.weatherCondition.toLowerCase() == "clear") {
+                                            R.drawable.blue_and_black_bold_typography_quote_poster_3
+                                        } else if (weatherState.weatherCondition.toLowerCase() == "rain") {
+                                            R.drawable.blue_and_black_bold_typography_quote_poster_2
+                                        } else {
+                                            R.drawable.blue_and_black_bold_typography_quote_poster
+                                        }
+                                    ),
+                                    contentDescription = "PanPan",
+                                    modifier = modifier
+                                        .size(150.dp)
                                 )
                             }
 
-                            Image(
-                                painter = painterResource(
-                                    if (weatherState.weatherCondition.toLowerCase() == "clear") {
-                                        R.drawable.blue_and_black_bold_typography_quote_poster_3
-                                    } else if (weatherState.weatherCondition.toLowerCase() == "rain") {
-                                        R.drawable.blue_and_black_bold_typography_quote_poster_2
-                                    } else {
-                                        R.drawable.blue_and_black_bold_typography_quote_poster
-                                    }
+                            val listWeatherInfo = arrayListOf(
+                                Triple(
+                                    "HUMIDITY",
+                                    "${weatherState.humidity ?: 0}%",
+                                    R.drawable.icon_humidity
                                 ),
-                                contentDescription = "PanPan",
-                                modifier = modifier
-                                    .size(150.dp)
+                                Triple(
+                                    "WIND",
+                                    "${weatherState.windSpeed ?: 0}km/h",
+                                    R.drawable.icon_wind
+                                ),
+                                Triple(
+                                    "FEELS LIKE",
+                                    "${weatherState.feelsLike ?: 0}°",
+                                    R.drawable.icon_feels_like
+                                ),
+                                Triple(
+                                    "RAIN FALL",
+                                    "${weatherState.rainFallLastHour ?: 0} mm",
+                                    R.drawable.vector_2
+                                ),
+                                Triple(
+                                    "PRESSURE",
+                                    "${weatherState.pressure ?: 0}hPa",
+                                    R.drawable.devices
+                                ),
+                                Triple(
+                                    "CLOUDS", "${weatherState.cloudsAll ?: 0}%", R.drawable.cloud
+                                )
                             )
+
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(3),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = modifier
+                                    .fillMaxWidth()
+                                    .height(((listWeatherInfo.size + 3 - 1) / 3 * 130).dp),
+                            ) {
+                                items(listWeatherInfo) {
+                                    infoCardView(
+                                        title = it.first,
+                                        value = it.second,
+                                        iconRes = it.third
+                                    )
+                                }
+                            }
                         }
-//                        LazyVerticalGrid(
-//                            columns = GridCells.Fixed(3)
-//                        ) { }
+
+                        val listSunInfo = arrayListOf(
+                            Triple(
+                                "SUNRISE",
+                                "${sunrieTime}",
+                                R.drawable.vector
+                            ),
+                            Triple(
+                                "SUNSET",
+                                "${sunsetTime}",
+                                R.drawable.vector_21png
+                            )
+                        )
+
+                        Row(
+                            modifier = modifier
+                                .fillMaxWidth()
+                                .padding(top = 24.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            listSunInfo.forEach {
+                                SunCardView(
+                                    title = it.first,
+                                    value = it.second,
+                                    iconRes = it.third
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
-
     }
 }
 

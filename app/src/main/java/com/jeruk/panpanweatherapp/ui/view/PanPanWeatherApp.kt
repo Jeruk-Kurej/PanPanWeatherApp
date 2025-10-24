@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -36,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,6 +56,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.jeruk.panpanweatherapp.R
 import com.jeruk.panpanweatherapp.ui.viewmodel.PanPanViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -68,19 +71,15 @@ fun PanPanWeatherApp(
     var userInputCityName by rememberSaveable { mutableStateOf("") }
     val iconByUrl by viewModel.weatherIconUrl.collectAsState()
 
-    val timestamp = weatherState.dateTime * 1000L
-    val date = Date(timestamp)
+    val tanggalBerapa by viewModel.tanggalBerapa.collectAsState()
+    val jamBerapa by viewModel.jamBerapa.collectAsState()
+    val listWeatherInfo by viewModel.listWeatherInfo.collectAsState()
+    val listSunInfo by viewModel.listSunInfo.collectAsState()
 
-    val sunrieTime = SimpleDateFormat("HH:mm a", Locale("id")).format(Date(weatherState.sunriseTime * 1000L))
-    val sunsetTime = SimpleDateFormat("HH:mm a", Locale("id")).format(Date(weatherState.sunsetTime * 1000L))
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
-    val dateFormatter = SimpleDateFormat("MMMM dd", Locale("id"))
-    val tanggalBerapa = dateFormatter.format(date)
-
-    val timeFormatter = SimpleDateFormat("HH:mm a", Locale("id"))
-    val jamBerapa = timeFormatter.format(date)
-
-    Column (
+    Column(
         modifier = modifier
             .fillMaxSize()
             .paint(
@@ -88,13 +87,6 @@ fun PanPanWeatherApp(
                 contentScale = ContentScale.Crop
             )
     ) {
-//        Image(
-//            painter = painterResource(R.drawable.weather___home_2),
-//            contentDescription = "background",
-//            modifier = Modifier.fillMaxSize(),
-//            contentScale = ContentScale.FillBounds
-//        )
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -133,7 +125,18 @@ fun PanPanWeatherApp(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White
                 ),
-                modifier = Modifier.width(275.dp)
+                modifier = Modifier.width(275.dp),
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        if (userInputCityName.isNotBlank()) {
+                            viewModel.loadWeather(userInputCityName)
+                            coroutineScope.launch {
+                                listState.scrollToItem(0)
+                            }
+                        }
+                    }
+                )
             )
 
             Row(
@@ -150,6 +153,9 @@ fun PanPanWeatherApp(
                     .clickable {
                         if (userInputCityName.isNotBlank()) {
                             viewModel.loadWeather(userInputCityName)
+                            coroutineScope.launch {
+                                listState.scrollToItem(0)
+                            }
                         }
                     }
                     .padding(horizontal = 10.dp, vertical = 15.dp)
@@ -168,209 +174,148 @@ fun PanPanWeatherApp(
             }
         }
 
-        LazyColumn (
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            state = listState
         ) {
             item {
-            if (weatherState.errorMessage != null) {
-                ErrorView(weatherState.errorMessage)
-            } else if (weatherState.cityName.isBlank()) {
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Search",
-                        tint = Color(0xFFA3A7B9),
-                        modifier = Modifier.size(56.dp)
-                    )
-                    Text(
-                        "Search for a city to get started",
-                        color = Color(0xFFA3A7B9)
-                    )
-                }
-            } else {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = modifier
-                        .padding(horizontal = 24.dp)
-                ) {
-//                    item {
+                if (weatherState.errorMessage != null) {
+                    ErrorView(weatherState.errorMessage)
+                } else if (weatherState.cityName.isBlank()) {
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search",
+                            tint = Color(0xFFA3A7B9),
+                            modifier = Modifier.size(56.dp)
+                        )
+                        Text(
+                            "Search for a city to get started",
+                            color = Color(0xFFA3A7B9)
+                        )
+                    }
+                } else {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(
+                            96.dp,
+                            alignment = Alignment.CenterVertically
+                        ),
+                        modifier = modifier
+                            .padding(horizontal = 24.dp)
+                    ) {
                         Column(
-                            verticalArrangement = Arrangement.spacedBy(96.dp)
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Row(
-                                    modifier = modifier
-                                        .fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(
-                                        6.dp,
-                                        alignment = Alignment.CenterHorizontally
-                                    ),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.LocationOn,
-                                        contentDescription = "Location",
-                                        tint = Color.White
-                                    )
-                                    Text(
-                                        "${weatherState.cityName}",
-                                        color = Color.White,
-                                        fontSize = 18.sp
-                                    )
-                                }
-                                Column(
-                                    verticalArrangement = Arrangement.spacedBy(
-                                        4.dp,
-                                        alignment = Alignment.CenterVertically
-                                    ),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    modifier = modifier
-                                        .fillMaxWidth()
-                                ) {
-                                    Text(
-                                        "${tanggalBerapa}",
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White,
-                                        fontSize = 36.sp
-                                    )
-                                    Text(
-                                        "Updated as of ${jamBerapa}",
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White.copy(alpha = 0.7f),
-                                        fontSize = 16.sp
-                                    )
-                                }
-                            }
                             Row(
-                                horizontalArrangement = Arrangement.SpaceEvenly,
-                                verticalAlignment = Alignment.CenterVertically,
                                 modifier = modifier
-                                    .fillMaxWidth()
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(
+                                    6.dp,
+                                    alignment = Alignment.CenterHorizontally
+                                ),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(
-                                        4.dp,
-                                        alignment = Alignment.CenterVertically
-                                    )
-                                ) {
-                                    iconByUrl?.let {
-                                        Image(
-                                            painter = rememberAsyncImagePainter(it),
-                                            contentDescription = "Weather Icon",
-                                            modifier = Modifier.size(64.dp)
-                                        )
-                                    }
-                                    Text(
-                                        weatherState.weatherCondition,
-                                        color = Color.White,
-                                        fontSize = 26.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        "${weatherState.temperature.roundToInt()}°C",
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White,
-                                        fontSize = 64.sp
-                                    )
-                                }
-
-                                Image(
-                                    painter = painterResource(
-                                        if (weatherState.weatherCondition.toLowerCase() == "clear") {
-                                            R.drawable.blue_and_black_bold_typography_quote_poster_3
-                                        } else if (weatherState.weatherCondition.toLowerCase() == "rain") {
-                                            R.drawable.blue_and_black_bold_typography_quote_poster_2
-                                        } else {
-                                            R.drawable.blue_and_black_bold_typography_quote_poster
-                                        }
-                                    ),
-                                    contentDescription = "PanPan",
-                                    modifier = modifier
-                                        .size(150.dp)
+                                Icon(
+                                    imageVector = Icons.Filled.LocationOn,
+                                    contentDescription = "Location",
+                                    tint = Color.White
+                                )
+                                Text(
+                                    "${weatherState.cityName}",
+                                    color = Color.White,
+                                    fontSize = 18.sp
                                 )
                             }
-
-                            val listWeatherInfo = arrayListOf(
-                                Triple(
-                                    "HUMIDITY",
-                                    "${weatherState.humidity ?: 0}%",
-                                    R.drawable.icon_humidity
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(
+                                    4.dp,
+                                    alignment = Alignment.CenterVertically
                                 ),
-                                Triple(
-                                    "WIND",
-                                    "${weatherState.windSpeed ?: 0}km/h",
-                                    R.drawable.icon_wind
-                                ),
-                                Triple(
-                                    "FEELS LIKE",
-                                    "${weatherState.feelsLike ?: 0}°",
-                                    R.drawable.icon_feels_like
-                                ),
-                                Triple(
-                                    "RAIN FALL",
-                                    "${weatherState.rainFallLastHour ?: 0} mm",
-                                    R.drawable.vector_2
-                                ),
-                                Triple(
-                                    "PRESSURE",
-                                    "${weatherState.pressure ?: 0}hPa",
-                                    R.drawable.devices
-                                ),
-                                Triple(
-                                    "CLOUDS", "${weatherState.cloudsAll ?: 0}%", R.drawable.cloud
-                                )
-                            )
-
-                            LazyVerticalGrid(
-                                columns = GridCells.Fixed(3),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = modifier
                                     .fillMaxWidth()
-                                    .height(((listWeatherInfo.size + 3 - 1) / 3 * 130).dp),
                             ) {
-                                items(listWeatherInfo) {
-                                    infoCardView(
-                                        title = it.first,
-                                        value = it.second,
-                                        iconRes = it.third
-                                    )
-                                }
+                                Text(
+                                    "${tanggalBerapa}",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    fontSize = 36.sp
+                                )
+                                Text(
+                                    "Updated as of ${jamBerapa}",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White.copy(alpha = 0.7f),
+                                    fontSize = 16.sp
+                                )
                             }
                         }
-
-                        val listSunInfo = arrayListOf(
-                            Triple(
-                                "SUNRISE",
-                                "${sunrieTime}",
-                                R.drawable.vector
-                            ),
-                            Triple(
-                                "SUNSET",
-                                "${sunsetTime}",
-                                R.drawable.vector_21png
-                            )
-                        )
-
                         Row(
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = modifier
                                 .fillMaxWidth()
-                                .padding(top = 24.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            listSunInfo.forEach {
-                                SunCardView(
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(
+                                    4.dp,
+                                    alignment = Alignment.CenterVertically
+                                )
+                            ) {
+                                iconByUrl?.let {
+                                    Image(
+                                        painter = rememberAsyncImagePainter(it),
+                                        contentDescription = "Weather Icon",
+                                        modifier = Modifier.size(64.dp)
+                                    )
+                                }
+                                Text(
+                                    weatherState.weatherCondition,
+                                    color = Color.White,
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    "${weatherState.temperature.roundToInt()}°C",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    fontSize = 64.sp
+                                )
+                            }
+
+                            Image(
+                                painter = painterResource(
+                                    if (weatherState.weatherCondition.toLowerCase() == "clear") {
+                                        R.drawable.blue_and_black_bold_typography_quote_poster_3
+                                    } else if (weatherState.weatherCondition.toLowerCase() == "rain") {
+                                        R.drawable.blue_and_black_bold_typography_quote_poster_2
+                                    } else {
+                                        R.drawable.blue_and_black_bold_typography_quote_poster
+                                    }
+                                ),
+                                contentDescription = "PanPan",
+                                modifier = modifier
+                                    .size(150.dp)
+                            )
+                        }
+
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(3),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = modifier
+                                .fillMaxWidth()
+                                .height(((listWeatherInfo.size + 3 - 1) / 3 * 130).dp),
+                        ) {
+                            items(listWeatherInfo) {
+                                infoCardView(
                                     title = it.first,
                                     value = it.second,
                                     iconRes = it.third
@@ -378,7 +323,24 @@ fun PanPanWeatherApp(
                             }
                         }
                     }
+
+                    Row(
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .padding(top = 24.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        listSunInfo.forEach {
+                            SunCardView(
+                                title = it.first,
+                                value = it.second,
+                                iconRes = it.third
+                            )
+                        }
+                    }
                 }
+                Spacer(modifier = modifier.height(24.dp))
             }
         }
     }

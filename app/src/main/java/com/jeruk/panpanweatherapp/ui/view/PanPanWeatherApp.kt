@@ -278,13 +278,12 @@ fun PanPanWeatherApp(
                                     alignment = Alignment.CenterVertically
                                 )
                             ) {
-                                iconByUrl?.let {
-                                    Image(
-                                        painter = rememberAsyncImagePainter(it),
-                                        contentDescription = "Weather Icon",
-                                        modifier = Modifier.size(64.dp)
-                                    )
-                                }
+                                Image(
+                                    painter = rememberAsyncImagePainter(iconByUrl),
+                                    contentDescription = "Weather Icon",
+                                    modifier = Modifier.size(64.dp)
+                                )
+
                                 Text(
                                     weatherState.weatherCondition,
                                     color = Color.White,
